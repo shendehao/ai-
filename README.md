@@ -197,8 +197,7 @@ docker run -d -p 8000:8000 \
 
 如有问题或建议，欢迎通过以下方式联系：
 
-- 提交 [Issue](https://github.com/your-username/ai-assistant/issues)
-- 发送邮件至：your-email@example.com
+- 发送邮件至：3371574685@qq.com
 
 ---
 
