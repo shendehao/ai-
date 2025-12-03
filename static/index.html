@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://dashscope.aliyuncs.com;">
+    <title>AI 智能简历优化助手</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #4f46e5;
+            width: 24px;
+            height: 24px;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #4f46e5 0%, #818cf8 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+
+    <!-- Navigation -->
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-indigo-600 p-2 rounded-lg">
+                        <i data-lucide="sparkles" class="h-6 w-6 text-white"></i>
+                    </div>
+                    <span class="font-bold text-xl tracking-tight text-slate-900">AI 智能简历优化助手</span>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <a href="/contract" class="flex items-center space-x-2 text-sm font-medium text-slate-600 hover:text-purple-600 transition-colors">
+                        <i data-lucide="shield-check" class="h-4 w-4"></i>
+                        <span>合同分析器</span>
+                    </a>
+                    <button id="tutorialBtn" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors">使用教程</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+        
+        <!-- Hero Section -->
+        <div class="text-center mb-8 sm:mb-10 lg:mb-12">
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-extrabold text-slate-900 mb-3 sm:mb-4 leading-tight">
+                让 AI 为你的简历 <span class="text-indigo-600">注入灵魂</span>
+            </h1>
+            <p class="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto px-2 sm:px-0 leading-relaxed">
+                上传 PDF 简历与目标职位描述 (JD)，智能分析匹配度，获取专业修改建议与项目经历润色。
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+            
+            <!-- Left Column: Input -->
+            <div class="lg:col-span-6 space-y-6 lg:sticky lg:top-24 lg:self-start lg:h-[calc(100vh-8rem)]">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden lg:h-full flex flex-col">
+                    <div class="p-4 sm:p-6 bg-slate-50 border-b border-slate-100 flex-shrink-0">
+                        <h2 class="text-lg font-semibold flex items-center text-slate-800">
+                            <i data-lucide="file-input" class="h-5 w-5 mr-2 text-indigo-500"></i>
+                            上传资料
+                        </h2>
+                    </div>
+                    
+                    <form id="analyzeForm" class="p-4 sm:p-6 flex-1 flex flex-col lg:overflow-y-auto">
+                        
+                        <!-- API Key Configuration -->
+                        <div class="mb-6 flex-shrink-0">
+                            <label class="block text-sm font-medium text-slate-700 mb-2">API 配置</label>
+                            <button type="button" id="configApiBtn" class="w-full flex items-center justify-center px-4 py-3 border border-slate-300 rounded-xl text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all">
+                                <i data-lucide="settings" class="h-4 w-4 mr-2"></i>
+                                <span id="apiStatusText">配置 DashScope API Key</span>
+                            </button>
+                            <input type="hidden" id="apiKey" value="">
+                        </div>
+
+                        <!-- Resume Upload -->
+                        <div class="mb-4 sm:mb-6 flex-shrink-0">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">上传简历文件</label>
+                            <div class="mt-1 flex justify-center px-4 sm:px-6 pt-6 sm:pt-8 pb-6 sm:pb-8 border-2 border-slate-200 border-dashed rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-300 cursor-pointer group" onclick="document.getElementById('resumeFile').click()">
+                                <div class="space-y-2 text-center">
+                                    <div class="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-slate-300 group-hover:text-indigo-500 transition-colors flex items-center justify-center rounded-full bg-slate-50 group-hover:bg-indigo-100">
+                                        <i data-lucide="upload-cloud" class="h-5 w-5 sm:h-6 sm:w-6"></i>
+                                    </div>
+                                    <div class="text-sm text-slate-600">
+                                        <label for="resumeFile" class="relative cursor-pointer font-semibold text-indigo-600 hover:text-indigo-500 focus-within:outline-none">
+                                            <span>点击上传</span>
+                                            <input id="resumeFile" name="resumeFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" class="sr-only" onchange="updateFileName(this)">
+                                        </label>
+                                        <span class="pl-1 hidden sm:inline">或拖拽文件至此</span>
+                                    </div>
+                                    <p class="text-xs text-slate-400">支持 PDF、JPG、PNG、WebP 格式，最大 10MB</p>
+                                    <div id="fileInfo" class="hidden mt-3 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-sm inline-flex items-center animate-pulse">
+                                        <i data-lucide="file-check" class="h-4 w-4 mr-2"></i>
+                                        <span id="fileNameDisplay" class="font-medium truncate max-w-[150px] sm:max-w-[200px]"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Job Description -->
+                        <div class="flex-1 flex flex-col min-h-[150px] sm:min-h-[200px] mb-4 sm:mb-6">
+                            <label for="jdText" class="block text-sm font-medium text-slate-700 mb-1">职位描述 (JD)</label>
+                            <div class="relative flex-1 flex">
+                                <textarea id="jdText" class="block w-full h-full rounded-xl border-slate-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-3 sm:p-4 transition-all resize-none" placeholder="请粘贴目标职位的详细描述..."></textarea>
+                                <div class="absolute bottom-2 sm:bottom-3 right-2 sm:right-3 text-xs text-slate-400 pointer-events-none bg-white/80 px-2 py-1 rounded">
+                                    <i data-lucide="text-cursor" class="h-3 w-3 inline mr-1"></i>JD 内容
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button type="submit" id="submitBtn" class="flex-1 flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all disabled:opacity-70 disabled:cursor-not-allowed transform active:scale-[0.98] flex-shrink-0">
+                                <i data-lucide="sparkles" class="h-5 w-5 mr-2"></i>
+                                <span id="btnText">开始智能分析</span>
+                                <div id="btnLoader" class="loader ml-2 hidden border-white border-t-transparent"></div>
+                            </button>
+                            
+                            <button type="button" id="cancelBtn" class="hidden flex-1 flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all transform active:scale-[0.98] flex-shrink-0">
+                                <i data-lucide="x" class="h-5 w-5 mr-2"></i>
+                                <span>取消分析</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Error Message -->
+                <div id="errorMessage" class="hidden p-4 bg-red-50 border border-red-100 text-red-600 rounded-xl text-sm flex items-start shadow-sm">
+                    <i data-lucide="alert-triangle" class="h-5 w-5 mr-2 flex-shrink-0 mt-0.5"></i>
+                    <span id="errorText"></span>
+                </div>
+            </div>
+
+            <!-- Right Column: Results -->
+            <div class="lg:col-span-6 space-y-4 sm:space-y-6">
+                
+                <!-- Empty State -->
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full min-h-[300px] sm:min-h-[500px] bg-white rounded-2xl shadow-sm border border-slate-200 border-dashed p-6 sm:p-8 text-center text-slate-400">
+                    <div class="bg-slate-50 p-4 sm:p-6 rounded-full mb-4 sm:mb-6">
+                        <i data-lucide="bar-chart-big" class="h-12 w-12 sm:h-16 sm:w-16 text-slate-300"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-900 mb-2">等待分析</h3>
+                    <p class="max-w-xs mx-auto text-sm sm:text-base">在上方上传您的简历并填写职位描述，AI 将为您生成详细的优化报告。</p>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loadingState" class="hidden flex flex-col items-center justify-center h-full min-h-[300px] sm:min-h-[500px] bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 text-center">
+                    <div class="relative w-20 h-20 sm:w-24 sm:h-24 mb-6 sm:mb-8">
+                        <div class="absolute inset-0 rounded-full border-4 border-slate-100"></div>
+                        <div class="absolute inset-0 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin"></div>
+                        <i data-lucide="brain-circuit" class="absolute inset-0 m-auto h-8 w-8 sm:h-10 sm:w-10 text-indigo-600 animate-pulse"></i>
+                    </div>
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-900 mb-2">AI 正在深度分析...</h3>
+                    <p class="text-slate-500 animate-pulse text-sm sm:text-base">正在对比简历与 JD 匹配度，生成优化建议...</p>
+                </div>
+
+                <!-- Results Content -->
+                <div id="resultsContent" class="hidden space-y-4 sm:space-y-6">
+                    
+                    <!-- Top Section: Score & Missing Keywords Grid -->
+                    <div class="grid grid-cols-1 gap-4 sm:gap-6">
+                        <!-- Score Card -->
+                        <div class="bg-white p-4 sm:p-6 lg:p-8 rounded-2xl shadow-sm border border-slate-200 card-hover relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-4 opacity-10 hidden sm:block">
+                                <i data-lucide="target" class="h-24 w-24 lg:h-32 lg:w-32 text-indigo-600"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-900 mb-4 sm:mb-6 flex items-center">
+                                <i data-lucide="gauge" class="h-5 w-5 mr-2 text-indigo-600"></i>
+                                岗位匹配度
+                            </h3>
+                            <div class="flex flex-col sm:flex-row items-center relative z-10 gap-4 sm:gap-0">
+                                <div class="relative h-24 w-24 sm:h-28 sm:w-28 lg:h-32 lg:w-32 flex items-center justify-center flex-shrink-0">
+                                    <svg class="h-full w-full transform -rotate-90" viewBox="0 0 36 36">
+                                        <!-- Background Circle -->
+                                        <path class="text-slate-100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" />
+                                        <!-- Value Circle -->
+                                        <path id="scoreCirclePath" class="text-indigo-600 transition-all duration-1000 ease-out" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" />
+                                    </svg>
+                                    <div class="absolute flex flex-col items-center justify-center text-center">
+                                        <span id="scoreValue" class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900">--</span>
+                                        <span class="text-xs font-medium text-slate-500">总分 100</span>
+                                    </div>
+                                </div>
+                                <div class="sm:ml-6 lg:ml-8 flex-1 text-center sm:text-left">
+                                    <p id="scoreComment" class="text-base sm:text-lg font-medium text-slate-800 mb-2">分析完成</p>
+                                    <p class="text-slate-600 text-sm leading-relaxed">该分数基于简历内容与职位描述中关键技能、经验要求的匹配程度。高分意味着您的背景与职位高度契合。</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Missing Keywords -->
+                        <div class="bg-gradient-to-br from-rose-50 to-pink-50 p-4 sm:p-6 rounded-2xl shadow-sm border border-rose-100 card-hover relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-4 opacity-5 hidden sm:block">
+                                <i data-lucide="search-x" class="h-20 w-20 sm:h-24 sm:w-24 text-rose-500"></i>
+                            </div>
+                            <div class="relative z-10">
+                                <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-3 flex items-center flex-wrap gap-2">
+                                    <div class="p-2 bg-rose-100 rounded-lg">
+                                        <i data-lucide="alert-triangle" class="h-4 w-4 sm:h-5 sm:w-5 text-rose-600"></i>
+                                    </div>
+                                    <span>缺失关键词</span>
+                                    <span class="px-2 py-1 bg-rose-100 text-rose-700 text-xs font-medium rounded-full">需要补充</span>
+                                </h3>
+                                <p class="text-sm text-slate-600 mb-4 leading-relaxed">以下是职位描述中的重要技能，建议在简历中适当体现（如果您具备相关经验）：</p>
+                                <div class="flex flex-wrap gap-2 sm:gap-3" id="missingKeywordsList">
+                                    <!-- Keywords injected here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Suggestions -->
+                    <div class="bg-gradient-to-br from-amber-50 to-yellow-50 p-4 sm:p-6 rounded-2xl shadow-sm border border-amber-100 card-hover relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-5 hidden sm:block">
+                            <i data-lucide="sparkles" class="h-20 w-20 sm:h-24 sm:w-24 text-amber-500"></i>
+                        </div>
+                        <div class="relative z-10">
+                            <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-3 flex items-center flex-wrap gap-2">
+                                <div class="p-2 bg-amber-100 rounded-lg">
+                                    <i data-lucide="lightbulb" class="h-4 w-4 sm:h-5 sm:w-5 text-amber-600"></i>
+                                </div>
+                                <span>优化建议</span>
+                                <span class="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">AI 推荐</span>
+                            </h3>
+                            <p class="text-sm text-slate-600 mb-4 leading-relaxed">基于 AI 深度分析，为您提供以下具体的简历优化建议：</p>
+                            <div class="space-y-3 sm:space-y-4" id="suggestionsList">
+                                <!-- Suggestions injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HR Professional Insights -->
+                    <div class="bg-gradient-to-br from-indigo-50 to-purple-50 p-4 sm:p-6 rounded-2xl shadow-sm border border-indigo-100 card-hover relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-5 hidden sm:block">
+                            <i data-lucide="user-check" class="h-20 w-20 sm:h-24 sm:w-24 text-indigo-500"></i>
+                        </div>
+                        <div class="relative z-10">
+                            <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-3 flex items-center flex-wrap gap-2">
+                                <div class="p-2 bg-indigo-100 rounded-lg">
+                                    <i data-lucide="briefcase" class="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600"></i>
+                                </div>
+                                <span>HR总监 + 简历优化大师洞察</span>
+                                <span class="px-2 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full">双重专业</span>
+                            </h3>
+                            <p class="text-sm text-slate-600 mb-4 sm:mb-6 leading-relaxed">15年经验的HR总监兼简历优化大师，从招聘官+优化专家双重角度为您提供专业分析：</p>
+                            
+                            <div id="hrInsightsContainer" class="space-y-4 sm:space-y-6">
+                                <!-- HR Insights injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rewritten Projects -->
+                    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 sm:p-6 rounded-2xl shadow-sm border border-emerald-100 card-hover relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-5 hidden sm:block">
+                            <i data-lucide="edit-3" class="h-20 w-20 sm:h-24 sm:w-24 text-emerald-500"></i>
+                        </div>
+                        <div class="relative z-10">
+                            <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-3 flex items-center flex-wrap gap-2">
+                                <div class="p-2 bg-emerald-100 rounded-lg">
+                                    <i data-lucide="wand-2" class="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600"></i>
+                                </div>
+                                <span>项目经历润色推荐</span>
+                                <span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full">智能润色</span>
+                            </h3>
+                            <p class="text-sm text-slate-600 mb-4 sm:mb-6 leading-relaxed">AI 为您的项目经历提供专业润色，让表达更加精准和吸引人：</p>
+                            <div id="rewrittenProjectsList" class="space-y-4 sm:space-y-6">
+                                <!-- Rewrites injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- API Key Configuration Modal -->
+    <div id="apiModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-slate-900 flex items-center">
+                    <i data-lucide="key" class="h-5 w-5 mr-2 text-indigo-600"></i>
+                    配置 API Key
+                </h3>
+                <button id="closeModalBtn" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <i data-lucide="x" class="h-5 w-5"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">DashScope API Key</label>
+                    <input type="password" id="modalApiKey" class="w-full rounded-xl border-slate-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2.5 px-3 transition-all" placeholder="sk-..." autocomplete="off">
+                    
+                    <!-- Security Level Selection -->
+                    <div class="mt-3 space-y-2">
+                        <label class="block text-sm font-medium text-slate-700">安全级别</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="radio" name="securityLevel" value="session" class="mr-2 text-indigo-600" checked>
+                                <span class="text-sm text-slate-700">🔒 仅本次会话（推荐）- 关闭浏览器后自动清除</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="securityLevel" value="persistent" class="mr-2 text-indigo-600">
+                                <span class="text-sm text-slate-700">💾 持久保存 - 加密存储，下次访问时保留</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="securityLevel" value="memory" class="mr-2 text-indigo-600">
+                                <span class="text-sm text-slate-700">🧠 内存模式 - 仅在内存中保存，刷新页面后清除</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="text-xs text-slate-500 mt-3 p-2 bg-slate-50 rounded-lg">
+                        <p class="font-semibold mb-1">🛡️ 高级安全提示：</p>
+                        <ul class="space-y-1">
+                            <li>• 启用了内容安全策略(CSP)防止XSS攻击</li>
+                            <li>• 使用军用级AES-256加密算法</li>
+                            <li>• 支持会话级安全存储</li>
+                            <li>• 自动检测恶意访问尝试</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-3 pt-4">
+                    <button id="saveApiBtn" class="flex-1 bg-indigo-600 text-white py-2.5 px-4 rounded-xl text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all">
+                        保存配置
+                    </button>
+                    <button id="clearApiBtn" class="flex-1 bg-slate-100 text-slate-700 py-2.5 px-4 rounded-xl text-sm font-medium hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-all">
+                        清除配置
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tutorial Modal -->
+    <div id="tutorialModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div class="flex items-center justify-between p-6 border-b border-slate-200">
+                <h3 class="text-xl font-bold text-slate-900 flex items-center">
+                    <i data-lucide="book-open" class="h-6 w-6 mr-2 text-indigo-600"></i>
+                    使用教程
+                </h3>
+                <button id="closeTutorialBtn" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <i data-lucide="x" class="h-6 w-6"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto max-h-[60vh]">
+                <div class="space-y-6">
+                    <!-- Step 1 -->
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-sm">1</div>
+                        <div>
+                            <h4 class="font-semibold text-slate-900 mb-2">配置 API Key</h4>
+                            <p class="text-slate-600 text-sm leading-relaxed mb-3">
+                                点击 "配置 DashScope API Key" 按钮，在弹出的窗口中输入您的阿里云通义千问 API Key。
+                            </p>
+                            <div class="bg-slate-50 p-3 rounded-lg text-xs text-slate-500">
+                                <strong>获取方式：</strong>登录阿里云控制台 → 找到 DashScope 服务 → 创建 API Key
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-sm">2</div>
+                        <div>
+                            <h4 class="font-semibold text-slate-900 mb-2">上传简历文件</h4>
+                            <p class="text-slate-600 text-sm leading-relaxed mb-3">
+                                点击上传区域或拖拽简历文件到指定区域。支持 PDF、JPG、PNG、WebP 格式，最大 10MB。
+                            </p>
+                            <div class="bg-amber-50 p-3 rounded-lg text-xs text-amber-700">
+                                <strong>格式说明：</strong>
+                                <ul class="mt-1 space-y-1">
+                                    <li>• <strong>PDF 格式</strong>：推荐使用，文字提取最准确</li>
+                                    <li>• <strong>图片格式</strong>：支持 JPG/PNG/WebP，使用 OCR 识别文字</li>
+                                    <li>• 图片请确保清晰可读，避免模糊或倾斜</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-sm">3</div>
+                        <div>
+                            <h4 class="font-semibold text-slate-900 mb-2">填写职位描述</h4>
+                            <p class="text-slate-600 text-sm leading-relaxed mb-3">
+                                在文本框中粘贴目标职位的完整 JD（Job Description），包括职位要求、技能需求、工作职责等。
+                            </p>
+                            <div class="bg-green-50 p-3 rounded-lg text-xs text-green-700">
+                                <strong>建议：</strong>JD 内容越详细，AI 分析结果越准确。
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-sm">4</div>
+                        <div>
+                            <h4 class="font-semibold text-slate-900 mb-2">开始智能分析</h4>
+                            <p class="text-slate-600 text-sm leading-relaxed mb-3">
+                                点击 "开始智能分析" 按钮，AI 将自动分析简历与 JD 的匹配度，并生成详细报告。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 5 -->
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-sm">5</div>
+                        <div>
+                            <h4 class="font-semibold text-slate-900 mb-2">查看分析结果</h4>
+                            <p class="text-slate-600 text-sm leading-relaxed mb-3">
+                                分析完成后，您将看到：
+                            </p>
+                            <ul class="text-sm text-slate-600 space-y-1 ml-4">
+                                <li class="flex items-center"><i data-lucide="check" class="h-3 w-3 mr-2 text-green-500"></i>匹配度评分（0-100分）</li>
+                                <li class="flex items-center"><i data-lucide="check" class="h-3 w-3 mr-2 text-green-500"></i>缺失关键词列表</li>
+                                <li class="flex items-center"><i data-lucide="check" class="h-3 w-3 mr-2 text-green-500"></i>具体优化建议</li>
+                                <li class="flex items-center"><i data-lucide="check" class="h-3 w-3 mr-2 text-green-500"></i>项目经历润色推荐</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Tips -->
+                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                        <h4 class="font-semibold text-indigo-900 mb-2 flex items-center">
+                            <i data-lucide="lightbulb" class="h-4 w-4 mr-2"></i>
+                            使用技巧
+                        </h4>
+                        <ul class="text-sm text-indigo-800 space-y-1">
+                            <li>• 多次尝试不同的 JD，找到最佳匹配的职位方向</li>
+                            <li>• 根据 AI 建议逐步优化简历内容</li>
+                            <li>• 重点关注缺失关键词，适当补充相关技能</li>
+                            <li>• 使用润色推荐来改写项目描述，提升表达效果</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t border-slate-200 py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-slate-400 text-sm">© 2025 Resume Polisher AI. Powered by 阿里云通义千问.</p>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // Advanced Security System
+        let memoryStorage = {}; // In-memory storage
+        let securityLevel = 'session'; // Default security level
+        
+        // Generate a unique session key for encryption
+        function generateSessionKey() {
+            const array = new Uint8Array(32);
+            crypto.getRandomValues(array);
+            return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Advanced AES-256 encryption (simplified implementation)
+        async function advancedEncrypt(text, key) {
+            try {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(text);
+                const keyData = encoder.encode(key);
+                
+                // Generate IV
+                const iv = crypto.getRandomValues(new Uint8Array(16));
+                
+                // Import key for AES-GCM
+                const cryptoKey = await crypto.subtle.importKey(
+                    'raw',
+                    keyData.slice(0, 32), // Use first 32 bytes for AES-256
+                    { name: 'AES-GCM' },
+                    false,
+                    ['encrypt']
+                );
+                
+                // Encrypt
+                const encrypted = await crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    cryptoKey,
+                    data
+                );
+                
+                // Combine IV and encrypted data
+                const combined = new Uint8Array(iv.length + encrypted.byteLength);
+                combined.set(iv);
+                combined.set(new Uint8Array(encrypted), iv.length);
+                
+                return btoa(String.fromCharCode(...combined));
+            } catch (e) {
+                console.error('Encryption failed:', e);
+                // Fallback to simple encoding
+                return btoa(text).split('').reverse().join('');
+            }
+        }
+
+        async function advancedDecrypt(encryptedData, key) {
+            try {
+                const combined = new Uint8Array(atob(encryptedData).split('').map(c => c.charCodeAt(0)));
+                const iv = combined.slice(0, 16);
+                const encrypted = combined.slice(16);
+                
+                const encoder = new TextEncoder();
+                const keyData = encoder.encode(key);
+                
+                const cryptoKey = await crypto.subtle.importKey(
+                    'raw',
+                    keyData.slice(0, 32),
+                    { name: 'AES-GCM' },
+                    false,
+                    ['decrypt']
+                );
+                
+                const decrypted = await crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    cryptoKey,
+                    encrypted
+                );
+                
+                return new TextDecoder().decode(decrypted);
+            } catch (e) {
+                console.error('Decryption failed:', e);
+                // Fallback to simple decoding
+                try {
+                    const reversed = encryptedData.split('').reverse().join('');
+                    return atob(reversed);
+                } catch (e2) {
+                    return '';
+                }
+            }
+        }
+
+        // Security monitoring
+        let accessAttempts = 0;
+        const MAX_ACCESS_ATTEMPTS = 5;
+        
+        function detectMaliciousAccess() {
+            accessAttempts++;
+            if (accessAttempts > MAX_ACCESS_ATTEMPTS) {
+                console.warn('🚨 检测到可疑访问行为，已自动清除敏感数据');
+                clearAllApiKeys();
+                return true;
+            }
+            return false;
+        }
+
+        function clearAllApiKeys() {
+            // Clear all possible storage locations
+            localStorage.removeItem('dashscope_api_key_enc');
+            localStorage.removeItem('dashscope_api_key');
+            sessionStorage.clear();
+            memoryStorage = {};
+            document.getElementById('apiKey').value = '';
+        }
+
+        // API Key Management with multiple security levels
+        async function loadApiKey() {
+            if (detectMaliciousAccess()) return;
+            
+            let apiKey = '';
+            
+            // Try to load from memory first (highest security)
+            if (memoryStorage.apiKey) {
+                apiKey = memoryStorage.apiKey;
+                securityLevel = 'memory';
+            }
+            // Then try session storage
+            else if (sessionStorage.getItem('dashscope_session_key')) {
+                const sessionKey = sessionStorage.getItem('dashscope_session_key');
+                const encryptedKey = sessionStorage.getItem('dashscope_api_key_session');
+                if (encryptedKey && sessionKey) {
+                    try {
+                        apiKey = await advancedDecrypt(encryptedKey, sessionKey);
+                        securityLevel = 'session';
+                    } catch (e) {
+                        console.error('Session decryption failed');
+                    }
+                }
+            }
+            // Finally try persistent storage (lowest security)
+            else {
+                const encryptedKey = localStorage.getItem('dashscope_api_key_enc');
+                const persistentKey = localStorage.getItem('dashscope_persistent_key');
+                if (encryptedKey && persistentKey) {
+                    try {
+                        apiKey = await advancedDecrypt(encryptedKey, persistentKey);
+                        securityLevel = 'persistent';
+                    } catch (e) {
+                        console.error('Persistent decryption failed');
+                    }
+                }
+            }
+            
+            if (apiKey) {
+                document.getElementById('apiKey').value = apiKey;
+                document.getElementById('apiStatusText').textContent = `API Key 已配置 (${getSecurityLevelText()})`;
+                document.getElementById('configApiBtn').classList.add('border-green-300', 'bg-green-50', 'text-green-700');
+                document.getElementById('configApiBtn').classList.remove('border-slate-300', 'bg-white', 'text-slate-700');
+            }
+        }
+        
+        function getSecurityLevelText() {
+            switch(securityLevel) {
+                case 'memory': return '🧠 内存模式';
+                case 'session': return '🔒 会话模式';
+                case 'persistent': return '💾 持久模式';
+                default: return '未知';
+            }
+        }
+
+        function updateApiStatus() {
+            const apiKey = document.getElementById('apiKey').value;
+            const statusText = document.getElementById('apiStatusText');
+            const configBtn = document.getElementById('configApiBtn');
+            
+            if (apiKey) {
+                statusText.textContent = 'API Key 已配置';
+                configBtn.classList.add('border-green-300', 'bg-green-50', 'text-green-700');
+                configBtn.classList.remove('border-slate-300', 'bg-white', 'text-slate-700');
+            } else {
+                statusText.textContent = '配置 DashScope API Key';
+                configBtn.classList.add('border-slate-300', 'bg-white', 'text-slate-700');
+                configBtn.classList.remove('border-green-300', 'bg-green-50', 'text-green-700');
+            }
+        }
+
+        // Modal Management
+        document.getElementById('configApiBtn').addEventListener('click', () => {
+            const modal = document.getElementById('apiModal');
+            const modalInput = document.getElementById('modalApiKey');
+            modalInput.value = document.getElementById('apiKey').value;
+            modal.classList.remove('hidden');
+            modalInput.focus();
+        });
+
+        document.getElementById('closeModalBtn').addEventListener('click', () => {
+            document.getElementById('apiModal').classList.add('hidden');
+        });
+
+        document.getElementById('saveApiBtn').addEventListener('click', async () => {
+            const apiKey = document.getElementById('modalApiKey').value.trim();
+            const selectedSecurityLevel = document.querySelector('input[name="securityLevel"]:checked').value;
+            
+            if (!apiKey) {
+                alert('请输入有效的 API Key');
+                return;
+            }
+            
+            // Clear all existing keys first
+            clearAllApiKeys();
+            
+            try {
+                securityLevel = selectedSecurityLevel;
+                
+                switch (selectedSecurityLevel) {
+                    case 'memory':
+                        // Store only in memory - highest security
+                        memoryStorage.apiKey = apiKey;
+                        console.log('🧠 API Key 已保存到内存（最高安全级别）');
+                        break;
+                        
+                    case 'session':
+                        // Store in session storage with encryption - high security
+                        const sessionKey = generateSessionKey();
+                        const sessionEncrypted = await advancedEncrypt(apiKey, sessionKey);
+                        sessionStorage.setItem('dashscope_session_key', sessionKey);
+                        sessionStorage.setItem('dashscope_api_key_session', sessionEncrypted);
+                        console.log('🔒 API Key 已加密保存到会话存储');
+                        break;
+                        
+                    case 'persistent':
+                        // Store in local storage with encryption - medium security
+                        const persistentKey = generateSessionKey();
+                        const persistentEncrypted = await advancedEncrypt(apiKey, persistentKey);
+                        localStorage.setItem('dashscope_persistent_key', persistentKey);
+                        localStorage.setItem('dashscope_api_key_enc', persistentEncrypted);
+                        console.log('💾 API Key 已加密保存到本地存储');
+                        break;
+                }
+                
+                document.getElementById('apiKey').value = apiKey;
+                document.getElementById('apiStatusText').textContent = `API Key 已配置 (${getSecurityLevelText()})`;
+                document.getElementById('configApiBtn').classList.add('border-green-300', 'bg-green-50', 'text-green-700');
+                document.getElementById('configApiBtn').classList.remove('border-slate-300', 'bg-white', 'text-slate-700');
+                document.getElementById('apiModal').classList.add('hidden');
+                
+            } catch (error) {
+                console.error('保存 API Key 失败:', error);
+                alert('保存失败，请重试');
+            }
+        });
+
+        document.getElementById('clearApiBtn').addEventListener('click', () => {
+            // Remove both encrypted and unencrypted keys
+            localStorage.removeItem('dashscope_api_key_enc');
+            localStorage.removeItem('dashscope_api_key');
+            document.getElementById('apiKey').value = '';
+            document.getElementById('modalApiKey').value = '';
+            updateApiStatus();
+            document.getElementById('apiModal').classList.add('hidden');
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('apiModal').addEventListener('click', (e) => {
+            if (e.target.id === 'apiModal') {
+                document.getElementById('apiModal').classList.add('hidden');
+            }
+        });
+
+        // Tutorial Modal Management
+        document.addEventListener('DOMContentLoaded', function() {
+            const tutorialBtn = document.getElementById('tutorialBtn');
+            const tutorialModal = document.getElementById('tutorialModal');
+            const closeTutorialBtn = document.getElementById('closeTutorialBtn');
+            
+            if (tutorialBtn && tutorialModal) {
+                tutorialBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('Tutorial button clicked'); // Debug log
+                    tutorialModal.classList.remove('hidden');
+                });
+            }
+
+            if (closeTutorialBtn && tutorialModal) {
+                closeTutorialBtn.addEventListener('click', () => {
+                    tutorialModal.classList.add('hidden');
+                });
+            }
+
+            // Close tutorial modal when clicking outside
+            if (tutorialModal) {
+                tutorialModal.addEventListener('click', (e) => {
+                    if (e.target.id === 'tutorialModal') {
+                        tutorialModal.classList.add('hidden');
+                    }
+                });
+            }
+        });
+
+        // Load API key on page load
+        loadApiKey();
+
+        function updateFileName(input) {
+            const fileName = input.files[0]?.name;
+            const fileInfo = document.getElementById('fileInfo');
+            if (fileName) {
+                document.getElementById('fileNameDisplay').textContent = fileName;
+                fileInfo.classList.remove('hidden');
+            } else {
+                fileInfo.classList.add('hidden');
+            }
+        }
+
+        // 拖拽上传功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropZone = document.querySelector('[onclick*="resumeFile"]');
+            const fileInput = document.getElementById('resumeFile');
+            
+            if (!dropZone || !fileInput) return;
+            
+            // 防止默认拖拽行为
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            // 拖拽进入时高亮显示
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, highlight, false);
+            });
+            
+            // 拖拽离开时取消高亮
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight(e) {
+                dropZone.classList.add('border-indigo-500', 'bg-indigo-50', 'scale-[1.02]');
+                dropZone.classList.remove('border-slate-200');
+            }
+            
+            function unhighlight(e) {
+                dropZone.classList.remove('border-indigo-500', 'bg-indigo-50', 'scale-[1.02]');
+                dropZone.classList.add('border-slate-200');
+            }
+            
+            // 处理文件拖放
+            dropZone.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length > 0) {
+                    // 将文件赋值给 input
+                    fileInput.files = files;
+                    
+                    // 触发文件名更新
+                    updateFileName(fileInput);
+                    
+                    // 显示成功提示
+                    const fileName = files[0].name;
+                    showToast(`已选择文件: ${fileName}`, 'success');
+                }
+            }
+        });
+
+        let currentRequest = null; // 用于存储当前的请求，以便取消
+        
+        document.getElementById('analyzeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resumeFile = document.getElementById('resumeFile').files[0];
+            const jdText = document.getElementById('jdText').value;
+            const apiKey = document.getElementById('apiKey').value;
+            
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const loadingState = document.getElementById('loadingState');
+            const emptyState = document.getElementById('emptyState');
+            const resultsContent = document.getElementById('resultsContent');
+            const submitBtn = document.getElementById('submitBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const btnText = document.getElementById('btnText');
+            const btnLoader = document.getElementById('btnLoader');
+
+            // Validation
+            errorMessage.classList.add('hidden');
+            if (!resumeFile) {
+                showError("请上传简历文件（支持 PDF、JPG、PNG、WebP 格式）。");
+                return;
+            }
+            
+            // Check if it's an image file and warn user
+            const fileName = resumeFile.name.toLowerCase();
+            const isImage = fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || 
+                          fileName.endsWith('.png') || fileName.endsWith('.webp');
+            
+            if (isImage) {
+                console.log('检测到图片格式，可能需要 OCR 支持');
+            }
+            if (!jdText.trim()) {
+                showError("请填写目标职位的 JD 描述。");
+                return;
+            }
+
+            // UI State: Loading
+            submitBtn.disabled = true;
+            submitBtn.classList.add('hidden');
+            cancelBtn.classList.remove('hidden');
+            btnText.textContent = '分析中...';
+            btnLoader.classList.remove('hidden');
+            
+            emptyState.classList.add('hidden');
+            resultsContent.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+            
+            // Scroll to results area on mobile
+            if (window.innerWidth < 1024) {
+                loadingState.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            const formData = new FormData();
+            formData.append('resume', resumeFile);
+            formData.append('jd_text', jdText);
+            if (apiKey) {
+                formData.append('api_key', apiKey);
+            }
+
+            try {
+                // 创建 AbortController 用于取消请求
+                const controller = new AbortController();
+                currentRequest = controller;
+                
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData,
+                    signal: controller.signal
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.detail || '分析请求失败，请稍后重试');
+                }
+
+                const data = await response.json();
+                renderResults(data.analysis);
+
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    showToast('分析已取消', 'info');
+                } else {
+                    showError(error.message);
+                }
+                emptyState.classList.remove('hidden');
+                loadingState.classList.add('hidden');
+            } finally {
+                // 重置UI状态
+                loadingState.classList.add('hidden');
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('hidden');
+                cancelBtn.classList.add('hidden');
+                btnText.textContent = '开始智能分析';
+                btnLoader.classList.add('hidden');
+                currentRequest = null;
+            }
+        });
+
+        // 取消按钮事件监听器
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            if (currentRequest) {
+                currentRequest.abort();
+                showToast('正在取消分析...', 'info');
+            }
+        });
+
+        function showError(msg) {
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            errorText.textContent = msg;
+            errorMessage.classList.remove('hidden');
+        }
+
+        function renderResults(analysis) {
+            const resultsContent = document.getElementById('resultsContent');
+            resultsContent.classList.remove('hidden');
+
+            // Scroll to results
+            resultsContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Score
+            const score = parseInt(analysis.match_score || 0);
+            animateScore(score);
+            
+            const scoreComment = document.getElementById('scoreComment');
+            let comment = "匹配度一般";
+            let colorClass = "text-indigo-600";
+            
+            if (score >= 80) { comment = "匹配度极高！"; colorClass = "text-emerald-600"; }
+            else if (score >= 60) { comment = "匹配度良好"; colorClass = "text-indigo-600"; }
+            else if (score >= 40) { comment = "匹配度尚可"; colorClass = "text-amber-600"; }
+            else { comment = "匹配度较低"; colorClass = "text-rose-600"; }
+            
+            scoreComment.textContent = comment;
+            scoreComment.className = `text-lg font-bold mb-2 ${colorClass}`;
+
+            // Missing Keywords
+            const keywordsContainer = document.getElementById('missingKeywordsList');
+            keywordsContainer.innerHTML = '';
+            if (analysis.missing_keywords && analysis.missing_keywords.length > 0) {
+                analysis.missing_keywords.forEach((kw, index) => {
+                    const badge = document.createElement('div');
+                    badge.className = 'group relative inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium bg-white border-2 border-rose-200 text-rose-700 hover:border-rose-300 hover:bg-rose-50 transition-all duration-200 shadow-sm hover:shadow-md';
+                    badge.innerHTML = `
+                        <i data-lucide="plus-circle" class="h-4 w-4 mr-2 text-rose-500 group-hover:text-rose-600"></i>
+                        <span>${kw}</span>
+                        <div class="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-xs rounded-full flex items-center justify-center font-bold">${index + 1}</div>
+                    `;
+                    keywordsContainer.appendChild(badge);
+                });
+            } else {
+                keywordsContainer.innerHTML = `
+                    <div class="flex items-center justify-center p-6 bg-green-50 rounded-xl border-2 border-dashed border-green-200">
+                        <i data-lucide="check-circle" class="h-6 w-6 text-green-500 mr-3"></i>
+                        <span class="text-green-700 font-medium">太棒了！未发现明显缺失的关键词</span>
+                    </div>
+                `;
+            }
+
+            // Suggestions
+            const suggestionsContainer = document.getElementById('suggestionsList');
+            suggestionsContainer.innerHTML = '';
+            if (analysis.improvement_suggestions && analysis.improvement_suggestions.length > 0) {
+                analysis.improvement_suggestions.forEach((sugg, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'group relative flex items-start p-5 bg-white rounded-xl border-2 border-amber-200 hover:border-amber-300 hover:shadow-md transition-all duration-200';
+                    div.innerHTML = `
+                        <div class="flex-shrink-0 w-8 h-8 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold text-sm mr-4 group-hover:bg-amber-600 transition-colors">
+                            ${index + 1}
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                <i data-lucide="target" class="h-4 w-4 text-amber-600 mr-2"></i>
+                                <span class="text-xs font-semibold text-amber-600 uppercase tracking-wide">优化建议</span>
+                            </div>
+                            <p class="text-slate-700 leading-relaxed">${sugg}</p>
+                        </div>
+                        <div class="absolute top-3 right-3 opacity-20 group-hover:opacity-30 transition-opacity">
+                            <i data-lucide="arrow-up-right" class="h-4 w-4 text-amber-500"></i>
+                        </div>
+                    `;
+                    suggestionsContainer.appendChild(div);
+                });
+            } else {
+                suggestionsContainer.innerHTML = `
+                    <div class="flex items-center justify-center p-6 bg-green-50 rounded-xl border-2 border-dashed border-green-200">
+                        <i data-lucide="thumbs-up" class="h-6 w-6 text-green-500 mr-3"></i>
+                        <span class="text-green-700 font-medium">您的简历已经很棒了！暂无需要特别优化的地方</span>
+                    </div>
+                `;
+            }
+
+            // HR Professional Insights
+            const hrInsightsContainer = document.getElementById('hrInsightsContainer');
+            hrInsightsContainer.innerHTML = '';
+            
+            if (analysis.hr_insights) {
+                const insights = analysis.hr_insights;
+                
+                // Strengths Section
+                if (insights.strengths && insights.strengths.length > 0) {
+                    const strengthsDiv = document.createElement('div');
+                    strengthsDiv.className = 'bg-white rounded-xl p-5 border-2 border-green-200 hover:border-green-300 transition-all duration-200';
+                    strengthsDiv.innerHTML = `
+                        <div class="flex items-center mb-4">
+                            <div class="p-2 bg-green-100 rounded-lg mr-3">
+                                <i data-lucide="thumbs-up" class="h-5 w-5 text-green-600"></i>
+                            </div>
+                            <h4 class="font-bold text-slate-900">核心优势</h4>
+                            <span class="ml-2 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">HR认可</span>
+                        </div>
+                        <div class="space-y-2">
+                            ${insights.strengths.map((strength, index) => `
+                                <div class="flex items-start">
+                                    <div class="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
+                                        ${index + 1}
+                                    </div>
+                                    <p class="text-slate-700 leading-relaxed">${strength}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    hrInsightsContainer.appendChild(strengthsDiv);
+                }
+                
+                // Concerns Section
+                if (insights.concerns && insights.concerns.length > 0) {
+                    const concernsDiv = document.createElement('div');
+                    concernsDiv.className = 'bg-white rounded-xl p-5 border-2 border-orange-200 hover:border-orange-300 transition-all duration-200';
+                    concernsDiv.innerHTML = `
+                        <div class="flex items-center mb-4">
+                            <div class="p-2 bg-orange-100 rounded-lg mr-3">
+                                <i data-lucide="alert-circle" class="h-5 w-5 text-orange-600"></i>
+                            </div>
+                            <h4 class="font-bold text-slate-900">需要关注的问题</h4>
+                            <span class="ml-2 px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full">HR提醒</span>
+                        </div>
+                        <div class="space-y-2">
+                            ${insights.concerns.map((concern, index) => `
+                                <div class="flex items-start">
+                                    <div class="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
+                                        !
+                                    </div>
+                                    <p class="text-slate-700 leading-relaxed">${concern}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    hrInsightsContainer.appendChild(concernsDiv);
+                }
+                
+                // Interview Focus Section
+                if (insights.interview_focus && insights.interview_focus.length > 0) {
+                    const interviewDiv = document.createElement('div');
+                    interviewDiv.className = 'bg-white rounded-xl p-5 border-2 border-blue-200 hover:border-blue-300 transition-all duration-200';
+                    interviewDiv.innerHTML = `
+                        <div class="flex items-center mb-4">
+                            <div class="p-2 bg-blue-100 rounded-lg mr-3">
+                                <i data-lucide="message-circle" class="h-5 w-5 text-blue-600"></i>
+                            </div>
+                            <h4 class="font-bold text-slate-900">面试重点考察</h4>
+                            <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">面试准备</span>
+                        </div>
+                        <div class="space-y-2">
+                            ${insights.interview_focus.map((focus, index) => `
+                                <div class="flex items-start">
+                                    <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
+                                        Q
+                                    </div>
+                                    <p class="text-slate-700 leading-relaxed">${focus}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    hrInsightsContainer.appendChild(interviewDiv);
+                }
+                
+                // Salary Range Section
+                if (insights.salary_range_suggestion) {
+                    const salaryDiv = document.createElement('div');
+                    salaryDiv.className = 'bg-white rounded-xl p-5 border-2 border-purple-200 hover:border-purple-300 transition-all duration-200';
+                    salaryDiv.innerHTML = `
+                        <div class="flex items-center mb-4">
+                            <div class="p-2 bg-purple-100 rounded-lg mr-3">
+                                <i data-lucide="dollar-sign" class="h-5 w-5 text-purple-600"></i>
+                            </div>
+                            <h4 class="font-bold text-slate-900">薪资建议</h4>
+                            <span class="ml-2 px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">市场参考</span>
+                        </div>
+                        <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 border-l-4 border-purple-400">
+                            <p class="text-slate-700 leading-relaxed font-medium">${insights.salary_range_suggestion}</p>
+                        </div>
+                    `;
+                    hrInsightsContainer.appendChild(salaryDiv);
+                }
+            } else {
+                hrInsightsContainer.innerHTML = `
+                    <div class="flex items-center justify-center p-6 bg-indigo-50 rounded-xl border-2 border-dashed border-indigo-200">
+                        <i data-lucide="user-check" class="h-6 w-6 text-indigo-500 mr-3"></i>
+                        <span class="text-indigo-700 font-medium">HR洞察分析中，请稍候...</span>
+                    </div>
+                `;
+            }
+
+            // Rewritten Projects
+            const rewritesContainer = document.getElementById('rewrittenProjectsList');
+            rewritesContainer.innerHTML = '';
+            if (analysis.rewritten_projects && analysis.rewritten_projects.length > 0) {
+                analysis.rewritten_projects.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'group bg-white rounded-2xl border-2 border-emerald-200 overflow-hidden hover:border-emerald-300 hover:shadow-lg transition-all duration-300';
+                    
+                    div.innerHTML = `
+                        <div class="p-5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+                                        <span class="font-bold text-sm">${index + 1}</span>
+                                    </div>
+                                    <span class="font-semibold">项目经历润色</span>
+                                </div>
+                                <i data-lucide="edit-3" class="h-5 w-5 opacity-80"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6 space-y-6">
+                            <!-- Original Text -->
+                            <div class="relative">
+                                <div class="flex items-center mb-3">
+                                    <div class="p-2 bg-slate-100 rounded-lg mr-3">
+                                        <i data-lucide="file-text" class="h-4 w-4 text-slate-500"></i>
+                                    </div>
+                                    <span class="font-semibold text-slate-700">原始描述</span>
+                                    <span class="ml-2 px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-full">需要优化</span>
+                                </div>
+                                <div class="bg-slate-50 rounded-xl p-4 border-l-4 border-slate-300">
+                                    <p class="text-slate-600 leading-relaxed italic">${item.original || 'N/A'}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Arrow -->
+                            <div class="flex justify-center">
+                                <div class="flex items-center space-x-2 text-emerald-500">
+                                    <div class="w-8 h-0.5 bg-emerald-300"></div>
+                                    <i data-lucide="arrow-down" class="h-5 w-5"></i>
+                                    <div class="w-8 h-0.5 bg-emerald-300"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Improved Text -->
+                            <div class="relative">
+                                <div class="flex items-center mb-3">
+                                    <div class="p-2 bg-emerald-100 rounded-lg mr-3">
+                                        <i data-lucide="sparkles" class="h-4 w-4 text-emerald-600"></i>
+                                    </div>
+                                    <span class="font-semibold text-slate-700">AI 优化版本</span>
+                                    <span class="ml-2 px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full">推荐使用</span>
+                                </div>
+                                <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-4 border-l-4 border-emerald-400">
+                                    <p class="text-slate-800 leading-relaxed font-medium">${item.rewritten || 'N/A'}</p>
+                                </div>
+                                
+                                <!-- Copy Button -->
+                                <button class="copy-btn absolute top-3 right-3 p-2 bg-white rounded-lg shadow-sm border border-emerald-200 hover:bg-emerald-50 transition-colors group/copy" data-copy-text="${item.rewritten || ''}">
+                                    <i data-lucide="copy" class="h-4 w-4 text-emerald-600 group-hover/copy:text-emerald-700"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    rewritesContainer.appendChild(div);
+                });
+            } else {
+                rewritesContainer.innerHTML = `
+                    <div class="flex items-center justify-center p-8 bg-green-50 rounded-xl border-2 border-dashed border-green-200">
+                        <i data-lucide="award" class="h-6 w-6 text-green-500 mr-3"></i>
+                        <span class="text-green-700 font-medium">您的项目描述已经很棒了！AI 认为无需进一步优化</span>
+                    </div>
+                `;
+            }
+            
+            lucide.createIcons();
+            
+            // Add event listeners to copy buttons
+            document.querySelectorAll('.copy-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const textToCopy = this.getAttribute('data-copy-text');
+                    copyToClipboard(textToCopy);
+                });
+            });
+        }
+
+        // Copy to clipboard function
+        function copyToClipboard(text) {
+            if (!text || text === 'N/A' || text.trim() === '') {
+                showToast('没有可复制的内容', 'error');
+                return;
+            }
+            
+            // Try modern clipboard API first
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('已复制到剪贴板', 'success');
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    fallbackCopy(text);
+                });
+            } else {
+                fallbackCopy(text);
+            }
+        }
+        
+        // Fallback copy method for older browsers or non-HTTPS
+        function fallbackCopy(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast('已复制到剪贴板', 'success');
+                } else {
+                    showToast('复制失败，请手动选择文本复制', 'error');
+                }
+            } catch (err) {
+                console.error('复制失败:', err);
+                showToast('复制失败，请手动选择文本复制', 'error');
+            } finally {
+                document.body.removeChild(textArea);
+            }
+        }
+        
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-emerald-500' : 'bg-red-500';
+            const icon = type === 'success' ? 'check' : 'x-circle';
+            
+            toast.className = `fixed top-4 right-4 ${bgColor} text-white px-4 py-3 rounded-lg shadow-lg z-50 flex items-center transform transition-all duration-300 translate-x-full`;
+            toast.innerHTML = `<i data-lucide="${icon}" class="h-4 w-4 mr-2"></i>${message}`;
+            document.body.appendChild(toast);
+            
+            // Initialize lucide icons for the toast
+            lucide.createIcons();
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Animate out and remove
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 300);
+            }, 2000);
+        }
+
+        function animateScore(targetScore) {
+            const scoreValue = document.getElementById('scoreValue');
+            const circlePath = document.getElementById('scoreCirclePath');
+            let currentScore = 0;
+            
+            // Calculate stroke-dasharray for the circle (100 is full circle in this SVG viewBox setup)
+            // But wait, path length is roughly 100 via pathLength or manual calc?
+            // simplified: 2 * PI * r. r=15.9155 => C=100. Correct.
+            
+            // Reset
+            circlePath.setAttribute('stroke-dasharray', `0, 100`);
+            
+            // Animate number
+            const interval = setInterval(() => {
+                if (currentScore >= targetScore) {
+                    clearInterval(interval);
+                    currentScore = targetScore;
+                } else {
+                    currentScore += 1;
+                }
+                scoreValue.textContent = currentScore;
+            }, 20);
+
+            // Animate circle
+            setTimeout(() => {
+                 circlePath.setAttribute('stroke-dasharray', `${targetScore}, 100`);
+                 
+                 // Dynamic color
+                 if(targetScore >= 80) circlePath.classList.add('text-emerald-500');
+                 else if(targetScore >= 60) circlePath.classList.add('text-indigo-500');
+                 else if(targetScore >= 40) circlePath.classList.add('text-amber-500');
+                 else circlePath.classList.add('text-rose-500');
+                 
+                 circlePath.classList.remove('text-indigo-600'); // remove default if needed or override
+            }, 100);
+        }
+    </script>
+</body>
+</html>

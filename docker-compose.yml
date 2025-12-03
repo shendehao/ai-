@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  resume-polisher:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY}
+    volumes:
+      - ./static:/app/static
+      - ./database.db:/app/database.db
+    restart: unless-stopped

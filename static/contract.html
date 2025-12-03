@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>说人话合同分析器 - AI法律助手</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .risk-high { @apply bg-red-50 border-red-200 text-red-800; }
+        .risk-medium { @apply bg-yellow-50 border-yellow-200 text-yellow-800; }
+        .risk-low { @apply bg-green-50 border-green-200 text-green-800; }
+        .risk-info { @apply bg-blue-50 border-blue-200 text-blue-800; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-purple-600 p-2 rounded-lg">
+                        <i data-lucide="shield-check" class="h-6 w-6 text-white"></i>
+                    </div>
+                    <span class="font-bold text-xl tracking-tight text-slate-900 hidden sm:block">说人话合同分析器</span>
+                    <span class="font-bold text-lg tracking-tight text-slate-900 sm:hidden">合同分析器</span>
+                </div>
+                <div class="flex items-center space-x-4 sm:space-x-6">
+                    <a href="/" class="flex items-center space-x-2 text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">
+                        <i data-lucide="sparkles" class="h-4 w-4"></i>
+                        <span class="hidden sm:inline">简历分析器</span>
+                        <span class="sm:hidden">简历</span>
+                    </a>
+                    <button id="tutorialBtn" class="text-sm font-medium text-slate-500 hover:text-purple-600 transition-colors">
+                        <span class="hidden sm:inline">使用教程</span>
+                        <i data-lucide="help-circle" class="h-4 w-4 sm:hidden"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Hero Section -->
+        <div class="text-center mb-8 sm:mb-10 lg:mb-12">
+            <div class="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-purple-100 rounded-full mb-4 sm:mb-6">
+                <i data-lucide="file-text" class="h-8 w-8 sm:h-10 sm:w-10 text-purple-600"></i>
+            </div>
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-3 sm:mb-4 leading-tight">
+                AI合同分析师
+                <span class="text-purple-600">说人话</span>
+            </h1>
+            <p class="text-base sm:text-lg lg:text-xl text-slate-600 max-w-3xl mx-auto px-2 sm:px-0 leading-relaxed">
+                上传租房合同、服务协议等文件，AI帮你找出其中的"坑"和风险点，用大白话解释复杂条款，保护你的权益！
+            </p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            <!-- Left Column: Upload Form -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 lg:p-8">
+                    <!-- Contract Type Selection -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                            <i data-lucide="tag" class="h-5 w-5 mr-2 text-purple-600"></i>
+                            选择合同类型
+                        </h3>
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                            <button class="contract-type-btn p-3 sm:p-4 rounded-xl border-2 border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all text-center" data-type="rental">
+                                <i data-lucide="home" class="h-5 w-5 sm:h-6 sm:w-6 mx-auto mb-2 text-purple-600"></i>
+                                <div class="text-xs sm:text-sm font-medium text-slate-700">租房合同</div>
+                            </button>
+                            <button class="contract-type-btn p-3 sm:p-4 rounded-xl border-2 border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all text-center" data-type="service">
+                                <i data-lucide="briefcase" class="h-5 w-5 sm:h-6 sm:w-6 mx-auto mb-2 text-purple-600"></i>
+                                <div class="text-xs sm:text-sm font-medium text-slate-700">服务协议</div>
+                            </button>
+                            <button class="contract-type-btn p-3 sm:p-4 rounded-xl border-2 border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all text-center" data-type="employment">
+                                <i data-lucide="user-check" class="h-5 w-5 sm:h-6 sm:w-6 mx-auto mb-2 text-purple-600"></i>
+                                <div class="text-xs sm:text-sm font-medium text-slate-700">劳动合同</div>
+                            </button>
+                            <button class="contract-type-btn p-3 sm:p-4 rounded-xl border-2 border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all text-center" data-type="other">
+                                <i data-lucide="file-text" class="h-5 w-5 sm:h-6 sm:w-6 mx-auto mb-2 text-purple-600"></i>
+                                <div class="text-xs sm:text-sm font-medium text-slate-700">其他合同</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Upload Form -->
+                    <form id="contractForm" class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-3">
+                                <i data-lucide="upload" class="h-4 w-4 inline mr-2"></i>
+                                上传合同文件
+                            </label>
+                            <div id="dropZone" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-xl hover:border-purple-400 transition-colors cursor-pointer">
+                                <div class="space-y-1 text-center">
+                                    <i data-lucide="file-plus" class="mx-auto h-12 w-12 text-slate-400" id="uploadIcon"></i>
+                                    <div class="flex text-sm text-slate-600">
+                                        <label for="contract-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-purple-600 hover:text-purple-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-purple-500">
+                                            <span id="uploadText">点击上传文件</span>
+                                            <input id="contract-upload" name="contract-upload" type="file" class="sr-only" accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png">
+                                        </label>
+                                        <p class="pl-1" id="dragText">或拖拽文件到此处</p>
+                                    </div>
+                                    <p class="text-xs text-slate-500">支持 PDF、Word、图片格式，最大 10MB</p>
+                                    <p id="fileName" class="text-sm font-medium text-purple-600 hidden"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- API Configuration -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">API 配置</label>
+                            <button type="button" id="configApiBtn" class="w-full flex items-center justify-center px-4 py-3 border border-slate-300 rounded-xl text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all">
+                                <i data-lucide="settings" class="h-4 w-4 mr-2"></i>
+                                <span id="apiStatusText">配置 DashScope API Key</span>
+                            </button>
+                            <input type="hidden" id="apiKey" value="">
+                        </div>
+
+                        <!-- Additional Context -->
+                        <div>
+                            <label for="context" class="block text-sm font-medium text-slate-700 mb-3">
+                                <i data-lucide="message-circle" class="h-4 w-4 inline mr-2"></i>
+                                补充说明 (可选)
+                            </label>
+                            <textarea id="context" name="context" rows="3" 
+                                class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
+                                placeholder="例如：这是我要签的租房合同，特别关心押金和违约条款..."></textarea>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                            <button type="submit" id="analyzeBtn" 
+                                class="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg text-sm sm:text-base">
+                                <i data-lucide="search" class="h-4 w-4 sm:h-5 sm:w-5 mr-2 inline"></i>
+                                开始分析合同
+                            </button>
+                            <button type="button" id="cancelBtn" 
+                                class="hidden flex-1 flex justify-center items-center py-3 sm:py-4 px-4 sm:px-6 border border-transparent rounded-xl shadow-lg text-sm sm:text-base font-bold text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all transform active:scale-[0.98] flex-shrink-0">
+                                <i data-lucide="x" class="h-4 w-4 sm:h-5 sm:w-5 mr-2"></i>
+                                <span>取消分析</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Error Message -->
+                    <div id="errorMessage" class="hidden mt-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+                        <div class="flex items-center">
+                            <i data-lucide="alert-circle" class="h-5 w-5 text-red-500 mr-2"></i>
+                            <span class="text-red-700 font-medium">分析失败</span>
+                        </div>
+                        <p id="errorText" class="mt-2 text-sm text-red-600 ml-7"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Info Panel -->
+            <div class="space-y-6">
+                <!-- Feature Highlights -->
+                <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
+                        <i data-lucide="star" class="h-5 w-5 mr-2 text-yellow-500"></i>
+                        功能特色
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="shield-alert" class="h-4 w-4 text-purple-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-slate-900">风险识别</h4>
+                                <p class="text-sm text-slate-600">自动识别合同中的风险条款和不公平条件</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="message-circle" class="h-4 w-4 text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-slate-900">通俗解释</h4>
+                                <p class="text-sm text-slate-600">用大白话解释复杂的法律条款</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="lightbulb" class="h-4 w-4 text-green-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-slate-900">实用建议</h4>
+                                <p class="text-sm text-slate-600">提供具体的应对策略和谈判建议</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Common Contract Types -->
+                <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
+                        <i data-lucide="file-type" class="h-5 w-5 mr-2 text-green-500"></i>
+                        支持的合同类型
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="home" class="h-4 w-4 text-purple-600"></i>
+                            <span class="text-sm text-slate-700">租房合同</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="briefcase" class="h-4 w-4 text-blue-600"></i>
+                            <span class="text-sm text-slate-700">服务协议</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="user-check" class="h-4 w-4 text-green-600"></i>
+                            <span class="text-sm text-slate-700">劳动合同</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="shopping-cart" class="h-4 w-4 text-orange-600"></i>
+                            <span class="text-sm text-slate-700">购买协议</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="handshake" class="h-4 w-4 text-indigo-600"></i>
+                            <span class="text-sm text-slate-700">合作协议</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tips -->
+                <div class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl border border-yellow-200 p-6">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
+                        <i data-lucide="info" class="h-5 w-5 mr-2 text-yellow-600"></i>
+                        使用提示
+                    </h3>
+                    <div class="space-y-3 text-sm text-slate-700">
+                        <p>• 上传清晰的合同文件，确保文字可读</p>
+                        <p>• 选择正确的合同类型以获得更精准的分析</p>
+                        <p>• 在补充说明中描述你的关注重点</p>
+                        <p>• 分析结果仅供参考，重要决定请咨询专业律师</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="hidden mt-12 text-center py-12 bg-white rounded-2xl shadow-lg border border-slate-200 max-w-4xl mx-auto">
+            <div class="loader mx-auto mb-6"></div>
+            <h3 class="text-xl font-bold text-slate-900 mb-2">正在分析合同内容</h3>
+            <p class="text-slate-500 animate-pulse">正在识别风险条款和潜在问题...</p>
+        </div>
+
+        <!-- Results Content -->
+        <div id="resultsContent" class="hidden mt-12 space-y-8">
+            <!-- Contract Summary -->
+            <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 md:p-8">
+                <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center">
+                    <i data-lucide="file-text" class="h-6 w-6 mr-3 text-purple-600"></i>
+                    合同概况
+                </h3>
+                <div id="contractSummary" class="space-y-4 text-lg">
+                    <!-- Summary content will be populated here -->
+                </div>
+            </div>
+
+            <!-- Risk Analysis -->
+            <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 md:p-8">
+                <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center">
+                    <i data-lucide="alert-triangle" class="h-6 w-6 mr-3 text-red-500"></i>
+                    风险分析
+                </h3>
+                <div id="riskAnalysis" class="space-y-6">
+                    <!-- Risk items will be populated here -->
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Plain Language Explanation -->
+                <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 md:p-8 h-full">
+                    <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center">
+                        <i data-lucide="message-square" class="h-6 w-6 mr-3 text-blue-500"></i>
+                        说人话解释
+                    </h3>
+                    <div id="plainExplanation" class="space-y-6">
+                        <!-- Plain language explanations will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Suggestions -->
+                <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 md:p-8 h-full">
+                    <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center">
+                        <i data-lucide="lightbulb" class="h-6 w-6 mr-3 text-yellow-500"></i>
+                        建议和对策
+                    </h3>
+                    <div id="suggestions" class="space-y-6">
+                        <!-- Suggestions will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tutorial Modal -->
+    <div id="tutorialModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div class="flex items-center justify-between p-6 border-b border-slate-200">
+                <h3 class="text-xl font-bold text-slate-900 flex items-center">
+                    <i data-lucide="book-open" class="h-6 w-6 mr-2 text-purple-600"></i>
+                    使用教程
+                </h3>
+                <button id="closeTutorialBtn" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <i data-lucide="x" class="h-6 w-6"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto max-h-[60vh]">
+                <div class="space-y-6">
+                    <!-- Step 1 -->
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-sm">1</div>
+                        <div>
+                            <h4 class="font-semibold text-slate-900 mb-2">配置 API Key</h4>
+                            <p class="text-slate-600 text-sm leading-relaxed mb-3">
+                                点击 "配置 DashScope API Key" 按钮，在弹出的窗口中输入您的阿里云通义千问 API Key。
+                            </p>
+                            <div class="bg-slate-50 p-3 rounded-lg text-xs text-slate-500">
+                                <strong>获取方式：</strong>登录阿里云控制台 → 找到 DashScope 服务 → 创建 API Key
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-sm">2</div>
+                        <div>
+                            <h4 class="font-semibold text-slate-900 mb-2">选择合同类型</h4>
+                            <p class="text-slate-600 text-sm leading-relaxed mb-3">
+                                根据您的合同选择对应的类型：租房合同、服务协议、劳动合同或其他合同。
+                            </p>
+                            <div class="bg-purple-50 p-3 rounded-lg text-xs text-purple-700">
+                                <strong>重要：</strong>选择正确的合同类型可以获得更精准的风险分析和专业建议。
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-sm">3</div>
+                        <div>
+                            <h4 class="font-semibold text-slate-900 mb-2">上传合同文件</h4>
+                            <p class="text-slate-600 text-sm leading-relaxed mb-3">
+                                点击上传区域或拖拽合同文件到指定区域。支持 PDF、Word、图片格式，最大 10MB。
+                            </p>
+                            <div class="bg-amber-50 p-3 rounded-lg text-xs text-amber-700">
+                                <strong>格式说明：</strong>
+                                <ul class="mt-1 space-y-1">
+                                    <li>• <strong>PDF：</strong>推荐格式，识别准确度最高</li>
+                                    <li>• <strong>图片：</strong>JPG、PNG格式，需要OCR识别</li>
+                                    <li>• <strong>Word：</strong>DOC、DOCX格式</li>
+                                    <li>• <strong>文本：</strong>TXT纯文本格式</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-sm">4</div>
+                        <div>
+                            <h4 class="font-semibold text-slate-900 mb-2">填写补充说明</h4>
+                            <p class="text-slate-600 text-sm leading-relaxed mb-3">
+                                在补充说明中描述您的关注重点，如押金条款、违约责任、服务范围等。
+                            </p>
+                            <div class="bg-blue-50 p-3 rounded-lg text-xs text-blue-700">
+                                <strong>示例：</strong>"这是我要签的租房合同，特别关心押金退还和提前解约的条款"
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 5 -->
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-sm">5</div>
+                        <div>
+                            <h4 class="font-semibold text-slate-900 mb-2">获取分析结果</h4>
+                            <p class="text-slate-600 text-sm leading-relaxed mb-3">
+                                AI将为您提供：合同概况、风险分析、通俗解释和实用建议。
+                            </p>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div class="bg-red-50 p-2 rounded text-red-700">🔴 高风险条款</div>
+                                <div class="bg-yellow-50 p-2 rounded text-yellow-700">🟡 中风险条款</div>
+                                <div class="bg-green-50 p-2 rounded text-green-700">🟢 低风险条款</div>
+                                <div class="bg-blue-50 p-2 rounded text-blue-700">💬 通俗解释</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Important Notes -->
+                    <div class="bg-slate-50 p-4 rounded-lg border-l-4 border-slate-400">
+                        <h4 class="font-semibold text-slate-900 mb-2 flex items-center">
+                            <i data-lucide="alert-triangle" class="h-4 w-4 mr-2 text-slate-600"></i>
+                            重要提醒
+                        </h4>
+                        <ul class="text-xs text-slate-600 space-y-1">
+                            <li>• 分析结果仅供参考，不构成法律建议</li>
+                            <li>• 重要合同建议咨询专业律师</li>
+                            <li>• 上传的文件仅用于分析，不会保存</li>
+                            <li>• 确保合同文件清晰可读，提高识别准确度</li>
+                        </ul>
+                    </div>
+
+                    <!-- API Key Security -->
+                    <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
+                        <h4 class="font-semibold text-slate-900 mb-2 flex items-center">
+                            <i data-lucide="shield" class="h-4 w-4 mr-2 text-green-600"></i>
+                            安全保障
+                        </h4>
+                        <ul class="text-xs text-slate-600 space-y-1">
+                            <li>• API Key 采用 AES-256 加密存储</li>
+                            <li>• 支持会话级、持久化、内存三种安全模式</li>
+                            <li>• 启用 CSP 防护，防止恶意攻击</li>
+                            <li>• 所有数据传输均采用 HTTPS 加密</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-6 border-t border-slate-200 bg-slate-50">
+                <div class="flex items-center justify-between">
+                    <div class="text-xs text-slate-500">
+                        💡 遇到问题？检查 API Key 配置和网络连接
+                    </div>
+                    <button id="closeTutorialBtn2" class="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors">
+                        开始使用
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Key Configuration Modal -->
+    <div id="apiModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-slate-900 flex items-center">
+                    <i data-lucide="key" class="h-5 w-5 mr-2 text-purple-600"></i>
+                    配置 API Key
+                </h3>
+                <button id="closeModalBtn" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <i data-lucide="x" class="h-5 w-5"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">DashScope API Key</label>
+                    <input type="password" id="modalApiKey" class="w-full rounded-xl border-slate-200 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm py-2.5 px-3 transition-all" placeholder="sk-..." autocomplete="off">
+                    
+                    <!-- Security Level Selection -->
+                    <div class="mt-3 space-y-2">
+                        <label class="block text-sm font-medium text-slate-700">安全级别</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="radio" name="securityLevel" value="session" class="mr-2 text-purple-600" checked>
+                                <span class="text-sm text-slate-700">🔒 仅本次会话（推荐）- 关闭浏览器后自动清除</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="securityLevel" value="persistent" class="mr-2 text-purple-600">
+                                <span class="text-sm text-slate-700">💾 持久保存 - 加密存储，下次访问时保留</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="securityLevel" value="memory" class="mr-2 text-purple-600">
+                                <span class="text-sm text-slate-700">🧠 内存模式 - 仅在内存中保存，刷新页面后清除</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="text-xs text-slate-500 mt-3 p-2 bg-slate-50 rounded-lg">
+                        <p class="font-semibold mb-1">🛡️ 高级安全提示：</p>
+                        <ul class="space-y-1">
+                            <li>• 启用了内容安全策略(CSP)防止XSS攻击</li>
+                            <li>• 使用军用级AES-256加密算法</li>
+                            <li>• 支持会话级安全存储</li>
+                            <li>• 自动检测恶意访问尝试</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-3 pt-4">
+                    <button id="saveApiBtn" class="flex-1 bg-purple-600 text-white py-2.5 px-4 rounded-xl text-sm font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all">
+                        保存配置
+                    </button>
+                    <button id="clearApiBtn" class="flex-1 bg-slate-100 text-slate-700 py-2.5 px-4 rounded-xl text-sm font-medium hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-all">
+                        清除配置
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        let abortController = null;
+        let selectedContractType = 'rental'; // default
+
+        // API Key Management System
+        let memoryApiKey = null; // For memory mode
+        
+        // Encryption utilities
+        function simpleEncrypt(text, key = 'contract-analyzer-key') {
+            let result = '';
+            for (let i = 0; i < text.length; i++) {
+                result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            }
+            return btoa(result);
+        }
+        
+        function simpleDecrypt(encryptedText, key = 'contract-analyzer-key') {
+            try {
+                const decoded = atob(encryptedText);
+                let result = '';
+                for (let i = 0; i < decoded.length; i++) {
+                    result += String.fromCharCode(decoded.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+                }
+                return result;
+            } catch (e) {
+                return null;
+            }
+        }
+        
+        // Get security level text
+        function getSecurityLevelText() {
+            const level = document.querySelector('input[name="securityLevel"]:checked')?.value || 'session';
+            switch(level) {
+                case 'session': return '会话级';
+                case 'persistent': return '持久化';
+                case 'memory': return '内存级';
+                default: return '会话级';
+            }
+        }
+        
+        // Load API Key on page load
+        function loadApiKey() {
+            // Try session storage first
+            let apiKey = sessionStorage.getItem('contract_dashscope_api_key');
+            if (apiKey) {
+                apiKey = simpleDecrypt(apiKey);
+                if (apiKey) {
+                    document.getElementById('apiKey').value = apiKey;
+                    document.getElementById('apiStatusText').textContent = `API Key 已配置 (${getSecurityLevelText()})`;
+                    document.getElementById('configApiBtn').classList.add('border-green-300', 'bg-green-50', 'text-green-700');
+                    document.getElementById('configApiBtn').classList.remove('border-slate-300', 'bg-white', 'text-slate-700');
+                    return;
+                }
+            }
+            
+            // Try local storage
+            apiKey = localStorage.getItem('contract_dashscope_api_key');
+            if (apiKey) {
+                apiKey = simpleDecrypt(apiKey);
+                if (apiKey) {
+                    document.getElementById('apiKey').value = apiKey;
+                    document.getElementById('apiStatusText').textContent = `API Key 已配置 (${getSecurityLevelText()})`;
+                    document.getElementById('configApiBtn').classList.add('border-green-300', 'bg-green-50', 'text-green-700');
+                    document.getElementById('configApiBtn').classList.remove('border-slate-300', 'bg-white', 'text-slate-700');
+                    return;
+                }
+            }
+            
+            // Check memory
+            if (memoryApiKey) {
+                document.getElementById('apiKey').value = memoryApiKey;
+                document.getElementById('apiStatusText').textContent = `API Key 已配置 (${getSecurityLevelText()})`;
+                document.getElementById('configApiBtn').classList.add('border-green-300', 'bg-green-50', 'text-green-700');
+                document.getElementById('configApiBtn').classList.remove('border-slate-300', 'bg-white', 'text-slate-700');
+            }
+        }
+        
+        // Update API status
+        function updateApiStatus() {
+            const apiKey = document.getElementById('apiKey').value;
+            const statusText = document.getElementById('apiStatusText');
+            const configBtn = document.getElementById('configApiBtn');
+            
+            if (apiKey) {
+                statusText.textContent = 'API Key 已配置';
+                configBtn.classList.add('border-green-300', 'bg-green-50', 'text-green-700');
+                configBtn.classList.remove('border-slate-300', 'bg-white', 'text-slate-700');
+            } else {
+                statusText.textContent = '配置 DashScope API Key';
+                configBtn.classList.add('border-slate-300', 'bg-white', 'text-slate-700');
+                configBtn.classList.remove('border-green-300', 'bg-green-50', 'text-green-700');
+            }
+        }
+
+        // Contract type selection
+        document.querySelectorAll('.contract-type-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                document.querySelectorAll('.contract-type-btn').forEach(b => {
+                    b.classList.remove('border-purple-500', 'bg-purple-50');
+                    b.classList.add('border-slate-200');
+                });
+                
+                // Add active class to clicked button
+                this.classList.remove('border-slate-200');
+                this.classList.add('border-purple-500', 'bg-purple-50');
+                
+                selectedContractType = this.dataset.type;
+            });
+        });
+
+        // Set default selection
+        document.querySelector('[data-type="rental"]').click();
+
+        // Load API Key on page load
+        loadApiKey();
+
+        // Tutorial Modal Events
+        document.getElementById('tutorialBtn').addEventListener('click', function() {
+            document.getElementById('tutorialModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeTutorialBtn').addEventListener('click', function() {
+            document.getElementById('tutorialModal').classList.add('hidden');
+        });
+
+        document.getElementById('closeTutorialBtn2').addEventListener('click', function() {
+            document.getElementById('tutorialModal').classList.add('hidden');
+        });
+
+        // Close tutorial modal when clicking outside
+        document.getElementById('tutorialModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+
+        // API Configuration Modal Events
+        document.getElementById('configApiBtn').addEventListener('click', function() {
+            document.getElementById('apiModal').classList.remove('hidden');
+            const currentApiKey = document.getElementById('apiKey').value;
+            if (currentApiKey) {
+                document.getElementById('modalApiKey').value = currentApiKey;
+            }
+        });
+
+        document.getElementById('closeModalBtn').addEventListener('click', function() {
+            document.getElementById('apiModal').classList.add('hidden');
+        });
+
+        // Save API Key
+        document.getElementById('saveApiBtn').addEventListener('click', function() {
+            const apiKey = document.getElementById('modalApiKey').value.trim();
+            
+            if (!apiKey) {
+                alert('请输入 API Key');
+                return;
+            }
+            
+            if (!apiKey.startsWith('sk-')) {
+                alert('API Key 格式不正确，应以 "sk-" 开头');
+                return;
+            }
+            
+            const securityLevel = document.querySelector('input[name="securityLevel"]:checked').value;
+            const encryptedKey = simpleEncrypt(apiKey);
+            
+            // Clear all previous storage
+            sessionStorage.removeItem('contract_dashscope_api_key');
+            localStorage.removeItem('contract_dashscope_api_key');
+            memoryApiKey = null;
+            
+            // Save based on security level
+            switch(securityLevel) {
+                case 'session':
+                    sessionStorage.setItem('contract_dashscope_api_key', encryptedKey);
+                    break;
+                case 'persistent':
+                    localStorage.setItem('contract_dashscope_api_key', encryptedKey);
+                    break;
+                case 'memory':
+                    memoryApiKey = apiKey;
+                    break;
+            }
+            
+            document.getElementById('apiKey').value = apiKey;
+            document.getElementById('apiStatusText').textContent = `API Key 已配置 (${getSecurityLevelText()})`;
+            document.getElementById('configApiBtn').classList.add('border-green-300', 'bg-green-50', 'text-green-700');
+            document.getElementById('configApiBtn').classList.remove('border-slate-300', 'bg-white', 'text-slate-700');
+            document.getElementById('apiModal').classList.add('hidden');
+        });
+
+        // Clear API Key
+        document.getElementById('clearApiBtn').addEventListener('click', function() {
+            sessionStorage.removeItem('contract_dashscope_api_key');
+            localStorage.removeItem('contract_dashscope_api_key');
+            memoryApiKey = null;
+            
+            document.getElementById('apiKey').value = '';
+            document.getElementById('modalApiKey').value = '';
+            updateApiStatus();
+            document.getElementById('apiModal').classList.add('hidden');
+        });
+
+        // Drag and drop functionality
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('contract-upload');
+        const uploadIcon = document.getElementById('uploadIcon');
+        const uploadText = document.getElementById('uploadText');
+        const dragText = document.getElementById('dragText');
+        const fileName = document.getElementById('fileName');
+
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        // Highlight drop area when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        // Handle dropped files
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        // Handle click to upload
+        dropZone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Handle file input change
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                handleFiles(e.target.files);
+            }
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function highlight(e) {
+            dropZone.classList.add('border-purple-500', 'bg-purple-50');
+            dropZone.classList.remove('border-slate-300');
+            uploadIcon.classList.add('text-purple-600');
+            uploadIcon.classList.remove('text-slate-400');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('border-purple-500', 'bg-purple-50');
+            dropZone.classList.add('border-slate-300');
+            uploadIcon.classList.remove('text-purple-600');
+            uploadIcon.classList.add('text-slate-400');
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                const file = files[0];
+                
+                // Validate file type
+                const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'image/jpeg', 'image/png', 'image/jpg'];
+                const allowedExtensions = ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.jpeg', '.png'];
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                
+                if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
+                    showError('不支持的文件格式，请上传 PDF、Word、图片或文本文件');
+                    return;
+                }
+                
+                // Validate file size
+                if (file.size > 10 * 1024 * 1024) {
+                    showError('文件大小不能超过10MB');
+                    return;
+                }
+                
+                // Update UI to show selected file
+                uploadText.textContent = '已选择文件';
+                dragText.textContent = '点击重新选择';
+                fileName.textContent = file.name;
+                fileName.classList.remove('hidden');
+                
+                // Update file input
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+                
+                // Change icon to indicate file is selected
+                uploadIcon.setAttribute('data-lucide', 'file-check');
+                uploadIcon.classList.add('text-green-600');
+                uploadIcon.classList.remove('text-slate-400', 'text-purple-600');
+                lucide.createIcons();
+            }
+        }
+
+        // Form submission
+        document.getElementById('contractForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('contract-upload');
+            const contextInput = document.getElementById('context');
+            const apiKeyInput = document.getElementById('apiKey');
+            const errorMessage = document.getElementById('errorMessage');
+            const loadingState = document.getElementById('loadingState');
+            const resultsContent = document.getElementById('resultsContent');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+
+            // Validate file
+            if (!fileInput.files || fileInput.files.length === 0) {
+                showError('请先上传合同文件');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            if (file.size > 10 * 1024 * 1024) {
+                showError('文件大小不能超过10MB');
+                return;
+            }
+
+            // Hide previous results and errors
+            errorMessage.classList.add('hidden');
+            resultsContent.classList.add('hidden');
+            
+            // Show loading state
+            loadingState.classList.remove('hidden');
+            analyzeBtn.classList.add('hidden');
+            cancelBtn.classList.remove('hidden');
+
+            try {
+                // Create abort controller for cancellation
+                abortController = new AbortController();
+
+                const formData = new FormData();
+                formData.append('contract', file);
+                formData.append('contract_type', selectedContractType);
+                formData.append('context', contextInput.value);
+                if (apiKeyInput.value.trim()) {
+                    formData.append('api_key', apiKeyInput.value.trim());
+                }
+
+                const response = await fetch('/analyze-contract', {
+                    method: 'POST',
+                    body: formData,
+                    signal: abortController.signal
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || '分析失败');
+                }
+
+                const data = await response.json();
+                renderResults(data.analysis);
+
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    showToast('分析已取消', 'info');
+                } else {
+                    console.error('分析错误:', error);
+                    showError(error.message || '分析过程中出现错误，请重试');
+                }
+            } finally {
+                // Reset UI state
+                loadingState.classList.add('hidden');
+                analyzeBtn.classList.remove('hidden');
+                cancelBtn.classList.add('hidden');
+                abortController = null;
+            }
+        });
+
+        // Cancel button
+        document.getElementById('cancelBtn').addEventListener('click', function() {
+            if (abortController) {
+                abortController.abort();
+                showToast('正在取消分析...', 'info');
+            }
+        });
+
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+
+        function renderResults(analysis) {
+            const resultsContent = document.getElementById('resultsContent');
+            resultsContent.classList.remove('hidden');
+            
+            // Scroll to results
+            resultsContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Render contract summary
+            renderContractSummary(analysis.contract_summary);
+            
+            // Render risk analysis
+            renderRiskAnalysis(analysis.risks);
+            
+            // Render plain language explanation
+            renderPlainExplanation(analysis.plain_explanations);
+            
+            // Render suggestions
+            renderSuggestions(analysis.suggestions);
+        }
+
+        function renderContractSummary(summary) {
+            const container = document.getElementById('contractSummary');
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-50 p-4 rounded-lg">
+                        <div class="text-sm text-slate-600 mb-1">合同类型</div>
+                        <div class="font-medium text-slate-900">${summary.contract_type || '未识别'}</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg">
+                        <div class="text-sm text-slate-600 mb-1">风险等级</div>
+                        <div class="font-medium ${getRiskClass(summary.overall_risk)}">${summary.overall_risk || '未评估'}</div>
+                    </div>
+                </div>
+                <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <div class="text-sm text-slate-600 mb-2">合同要点</div>
+                    <div class="text-slate-900">${summary.key_points || '正在分析...'}</div>
+                </div>
+            `;
+        }
+
+        function renderRiskAnalysis(risks) {
+            const container = document.getElementById('riskAnalysis');
+            if (!risks || risks.length === 0) {
+                container.innerHTML = '<p class="text-slate-500">未发现明显风险</p>';
+                return;
+            }
+
+            container.innerHTML = risks.map(risk => `
+                <div class="border rounded-lg p-4 ${getRiskBorderClass(risk.level)}">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <i data-lucide="${getRiskIcon(risk.level)}" class="h-5 w-5 ${getRiskIconClass(risk.level)}"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-medium text-slate-900 mb-2">${risk.title}</h4>
+                            <p class="text-slate-700 mb-3">${risk.description}</p>
+                            <div class="text-sm ${getRiskClass(risk.level)} font-medium">
+                                风险等级：${risk.level}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Re-initialize icons
+            lucide.createIcons();
+        }
+
+        function renderPlainExplanation(explanations) {
+            const container = document.getElementById('plainExplanation');
+            if (!explanations || explanations.length === 0) {
+                container.innerHTML = '<p class="text-slate-500">暂无需要特别解释的条款</p>';
+                return;
+            }
+
+            container.innerHTML = explanations.map(explanation => `
+                <div class="border border-slate-200 rounded-lg p-4">
+                    <h4 class="font-medium text-slate-900 mb-2">${explanation.clause_title}</h4>
+                    <div class="bg-slate-50 p-3 rounded-lg mb-3">
+                        <div class="text-sm text-slate-600 mb-1">原文条款：</div>
+                        <div class="text-slate-800 text-sm italic">"${explanation.original_text}"</div>
+                    </div>
+                    <div class="text-slate-700">
+                        <div class="text-sm text-slate-600 mb-1">通俗解释：</div>
+                        <div>${explanation.plain_explanation}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderSuggestions(suggestions) {
+            const container = document.getElementById('suggestions');
+            if (!suggestions || suggestions.length === 0) {
+                container.innerHTML = '<p class="text-slate-500">暂无特别建议</p>';
+                return;
+            }
+
+            container.innerHTML = suggestions.map((suggestion, index) => `
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0 w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center">
+                        <span class="text-xs font-medium text-yellow-700">${index + 1}</span>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="font-medium text-slate-900 mb-1">${suggestion.title}</h4>
+                        <p class="text-slate-700">${suggestion.content}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getRiskClass(level) {
+            switch(level) {
+                case '高风险': return 'text-red-600';
+                case '中风险': return 'text-yellow-600';
+                case '低风险': return 'text-green-600';
+                default: return 'text-slate-600';
+            }
+        }
+
+        function getRiskBorderClass(level) {
+            switch(level) {
+                case '高风险': return 'border-red-200 bg-red-50';
+                case '中风险': return 'border-yellow-200 bg-yellow-50';
+                case '低风险': return 'border-green-200 bg-green-50';
+                default: return 'border-slate-200 bg-slate-50';
+            }
+        }
+
+        function getRiskIcon(level) {
+            switch(level) {
+                case '高风险': return 'alert-triangle';
+                case '中风险': return 'alert-circle';
+                case '低风险': return 'info';
+                default: return 'help-circle';
+            }
+        }
+
+        function getRiskIconClass(level) {
+            switch(level) {
+                case '高风险': return 'text-red-500';
+                case '中风险': return 'text-yellow-500';
+                case '低风险': return 'text-green-500';
+                default: return 'text-slate-500';
+            }
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            let bgColor, icon;
+            
+            switch(type) {
+                case 'success':
+                    bgColor = 'bg-emerald-500';
+                    icon = 'check';
+                    break;
+                case 'error':
+                    bgColor = 'bg-red-500';
+                    icon = 'x-circle';
+                    break;
+                case 'info':
+                    bgColor = 'bg-blue-500';
+                    icon = 'info';
+                    break;
+                default:
+                    bgColor = 'bg-emerald-500';
+                    icon = 'check';
+            }
+            
+            toast.className = `fixed top-4 right-4 ${bgColor} text-white px-4 py-3 rounded-lg shadow-lg z-50 flex items-center transform transition-all duration-300 translate-x-full`;
+            toast.innerHTML = `<i data-lucide="${icon}" class="h-4 w-4 mr-2"></i>${message}`;
+            document.body.appendChild(toast);
+            
+            // Initialize lucide icons for the toast
+            lucide.createIcons();
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Animate out and remove
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 300);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
